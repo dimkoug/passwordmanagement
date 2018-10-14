@@ -15,9 +15,14 @@
     <link href="{% static 'bootstrap4/css/bootstrap.min.css' %}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{% static 'bootstrap4/css/jumbotron.css' %}" rel="stylesheet">
-    <link href="{% static 'css/navbar-fixed-top.css' %}" rel="stylesheet">
-<link rel="stylesheet" href=" {% static 'bootstrap4/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href=" {% static 'bootstrap4/css/font-awesome.min.css' %}">
+    <style media="screen">
+      body, html {
+        padding-top: 2rem;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </head>
 
   <body>
@@ -56,10 +61,11 @@
         {% endblock %}
       </div>
     </nav>
-    {% include 'partials/page_header.html' %}
+
     <div class="container">
-      {% include 'partials/messages.html' %}
-      {% block content %}{% endblock %}
+          {% include 'partials/page_header.html' %}
+        {% include 'partials/messages.html' %}
+        {% block content %}{% endblock %}
     </div> <!-- /container -->
 
 

@@ -24,3 +24,8 @@ class PasswordForm(DynamicForm, forms.ModelForm):
             'account_type', 'project', 'username', 'password', 'url',
             'comments'
         )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial['password'] = self.instance.get_password()

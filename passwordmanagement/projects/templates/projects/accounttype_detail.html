@@ -31,8 +31,8 @@
           <td>{{password.get_password}}</td>
           <td>{{password.url}}</td>
           <td>
-            <a class="btn btn-warning" href="{% url_with_pk object 'update' %}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-            <a class="btn btn-danger" href="{% url_with_pk object 'delete' %}"><i class="fa fa-times" aria-hidden="true"></i></a>
+            <a class="btn btn-warning" href="{% url_with_pk password 'update' %}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+            <a class="btn btn-danger" href="{% url_with_pk password 'delete' %}"><i class="fa fa-times" aria-hidden="true"></i></a>
           </td>
         </tr>
         {% empty %}

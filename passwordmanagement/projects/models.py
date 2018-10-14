@@ -1,7 +1,9 @@
 from django.db import models
 from django.conf import settings
-from .aescbc import encrypt, decrypt
 
+
+from .aescbc import encrypt, decrypt
+from .managers import ActiveManager
 # Create your models here.
 
 
@@ -17,6 +19,8 @@ class AccountType(Timestamped):
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
+    objects = ActiveManager()
+
     class Meta:
         default_related_name = 'accounttypes'
         verbose_name = 'account type'
@@ -29,6 +33,8 @@ class AccountType(Timestamped):
 class Project(Timestamped):
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+
+    objects = ActiveManager()
 
     class Meta:
         default_related_name = 'projects'
@@ -48,6 +54,8 @@ class Password(Timestamped):
     url = models.URLField(blank=True)
     active = models.BooleanField(default=True)
 
+    objects = ActiveManager()
+
     class Meta:
         default_related_name = 'passwords'
         verbose_name = 'password'
@@ -57,12 +65,28 @@ class Password(Timestamped):
         return self.username
 
     def save(self, *args, **kwargs):
-        encrypted = encrypt(
-            bytes(settings.SECRET_KEY, 'utf-8'), bytes(self.password, 'utf-8'))
-        self.password = encrypted
+        if not self.pk:
+            encrypted = encrypt(
+                bytes(settings.SECRET_KEY, 'utf-8'), bytes(
+                    self.password, 'utf-8'))
+            self.password = encrypted
         # decrypted = decrypt(bytes(settings.SECRET_KEY, 'utf-8'), encrypted)
         super().save(*args, **kwargs)
 
     def get_password(self):
-        decrypted = decrypt(bytes(settings.SECRET_KEY, 'utf-8'), self.password)
+        decrypted = None
+        if self.pk:
+            try:
+                decrypted = decrypt(bytes(
+                    settings.SECRET_KEY, 'utf-8'), self.password)
+            except Exception as e:
+                print(type(e).__name__)
+                encrypted = encrypt(
+                        bytes(settings.SECRET_KEY, 'utf-8'), bytes(
+                            self.password, 'utf-8'))
+                self.password = encrypted
+                self.save()
+                decrypted = decrypt(bytes(
+                    settings.SECRET_KEY, 'utf-8'), encrypted)
+
         return decrypted.decode("utf-8")
