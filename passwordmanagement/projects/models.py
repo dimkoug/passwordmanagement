@@ -57,9 +57,12 @@ class Password(Timestamped):
         return self.username
 
     def save(self, *args, **kwargs):
-        encrypted = encrypt(bytes(settings.SECRET_KEY, 'utf-8'), bytes(self.password, 'utf-8'))
+        encrypted = encrypt(
+            bytes(settings.SECRET_KEY, 'utf-8'), bytes(self.password, 'utf-8'))
         self.password = encrypted
-        decrypted = decrypt(bytes(settings.SECRET_KEY, 'utf-8'), encrypted)
-        print(encrypted)
-        print(decrypted)
+        # decrypted = decrypt(bytes(settings.SECRET_KEY, 'utf-8'), encrypted)
         super().save(*args, **kwargs)
+
+    def get_password(self):
+        decrypted = decrypt(bytes(settings.SECRET_KEY, 'utf-8'), self.password)
+        return decrypted.decode("utf-8")
