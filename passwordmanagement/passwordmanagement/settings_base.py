@@ -28,6 +28,10 @@ DEBUG = False
 
 ALLOWED_HOSTS = []
 
+LOGIN_REDIRECT_URL = 'manage'
+LOGOUT_REDIRECT_URL = 'project-list'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
 
 # Application definition
 
@@ -38,9 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'profiles',
     'cms',
     'projects',
 ]
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

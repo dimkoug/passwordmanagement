@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 
@@ -10,6 +11,13 @@ from .models import AccountType, Project, Password
 from .forms import AccountTypeForm, ProjectForm, PasswordForm
 
 
+class ProtectedViewMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_active:
+            return redirect('/users/login/?next=%s' % request.path)
+        return super().dispatch(request, *args, **kwargs)
+
+
 class ActiveMixin:
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -18,7 +26,7 @@ class ActiveMixin:
         return HttpResponseRedirect(self.success_url)
 
 
-class AccountTypeList(BaseList):
+class AccountTypeList(ProtectedViewMixin, BaseList):
     model = AccountType
     paginate_by = 100
 
@@ -30,26 +38,26 @@ class AccountTypeList(BaseList):
         return qs
 
 
-class AccountTypeDetail(BaseDetail):
+class AccountTypeDetail(ProtectedViewMixin, BaseDetail):
     model = AccountType
 
 
-class AccountTypeCreate(BaseCreate):
-    model = AccountType
-    form_class = AccountTypeForm
-
-
-class AccountTypeUpdate(BaseUpdate):
+class AccountTypeCreate(ProtectedViewMixin, BaseCreate):
     model = AccountType
     form_class = AccountTypeForm
 
 
-class AccountTypeDelete(ActiveMixin, BaseDelete):
+class AccountTypeUpdate(ProtectedViewMixin, BaseUpdate):
+    model = AccountType
+    form_class = AccountTypeForm
+
+
+class AccountTypeDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
     model = AccountType
     success_url = reverse_lazy('accounttype-list')
 
 
-class ProjectList(BaseList):
+class ProjectList(ProtectedViewMixin, BaseList):
     model = Project
     paginate_by = 100
 
@@ -61,26 +69,26 @@ class ProjectList(BaseList):
         return qs
 
 
-class ProjectDetail(BaseDetail):
+class ProjectDetail(ProtectedViewMixin, BaseDetail):
     model = Project
 
 
-class ProjectCreate(BaseCreate):
-    model = Project
-    form_class = ProjectForm
-
-
-class ProjectUpdate(BaseUpdate):
+class ProjectCreate(ProtectedViewMixin, BaseCreate):
     model = Project
     form_class = ProjectForm
 
 
-class ProjectDelete(ActiveMixin, BaseDelete):
+class ProjectUpdate(ProtectedViewMixin, BaseUpdate):
+    model = Project
+    form_class = ProjectForm
+
+
+class ProjectDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
     model = Project
     success_url = reverse_lazy('project-list')
 
 
-class PasswordList(BaseList):
+class PasswordList(ProtectedViewMixin, BaseList):
     model = Password
     paginate_by = 100
 
@@ -104,11 +112,11 @@ class PasswordList(BaseList):
         return qs
 
 
-class PasswordDetail(BaseDetail):
+class PasswordDetail(ProtectedViewMixin, BaseDetail):
     model = Password
 
 
-class PasswordCreate(BaseCreate):
+class PasswordCreate(ProtectedViewMixin, BaseCreate):
     model = Password
     form_class = PasswordForm
 
@@ -125,11 +133,11 @@ class PasswordCreate(BaseCreate):
         return initial
 
 
-class PasswordUpdate(BaseUpdate):
+class PasswordUpdate(ProtectedViewMixin, BaseUpdate):
     model = Password
     form_class = PasswordForm
 
 
-class PasswordDelete(ActiveMixin, BaseDelete):
+class PasswordDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
     model = Password
     success_url = reverse_lazy('password-list')
