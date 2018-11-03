@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+from profiles.models import Profile
 
 from .aescbc import encrypt, decrypt
 from .managers import ActiveManager
@@ -16,6 +17,7 @@ class Timestamped(models.Model):
 
 
 class AccountType(Timestamped):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
@@ -31,6 +33,7 @@ class AccountType(Timestamped):
 
 
 class Project(Timestamped):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
 
@@ -46,6 +49,7 @@ class Project(Timestamped):
 
 
 class Password(Timestamped):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     account_type = models.ForeignKey(AccountType, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     username = models.CharField(max_length=100)

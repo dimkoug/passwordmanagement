@@ -18,6 +18,12 @@ class ProtectedViewMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class SaveProfileMixin:
+    def form_valid(self, form):
+        form.instance.profile = self.request.user.profile_user
+        return super().form_valid(form)
+
+
 class ActiveMixin:
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -31,7 +37,8 @@ class AccountTypeList(ProtectedViewMixin, BaseList):
     paginate_by = 100
 
     def get_queryset(self):
-        qs = super().get_queryset().active()
+        qs = super().get_queryset().active().filter(
+            profile=self.request.user.profile_user)
         q = self.request.GET.get('q')
         if q and q != '':
             qs = qs.filter(name__icontains=q)
@@ -42,7 +49,7 @@ class AccountTypeDetail(ProtectedViewMixin, BaseDetail):
     model = AccountType
 
 
-class AccountTypeCreate(ProtectedViewMixin, BaseCreate):
+class AccountTypeCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
     model = AccountType
     form_class = AccountTypeForm
 
@@ -62,7 +69,8 @@ class ProjectList(ProtectedViewMixin, BaseList):
     paginate_by = 100
 
     def get_queryset(self):
-        qs = super().get_queryset().active()
+        qs = super().get_queryset().active().filter(
+            profile=self.request.user.profile_user)
         q = self.request.GET.get('q')
         if q and q != '':
             qs = qs.filter(name__icontains=q)
@@ -73,7 +81,7 @@ class ProjectDetail(ProtectedViewMixin, BaseDetail):
     model = Project
 
 
-class ProjectCreate(ProtectedViewMixin, BaseCreate):
+class ProjectCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
     model = Project
     form_class = ProjectForm
 
@@ -93,7 +101,8 @@ class PasswordList(ProtectedViewMixin, BaseList):
     paginate_by = 100
 
     def get_queryset(self):
-        qs = super().get_queryset().active()
+        qs = super().get_queryset().active().filter(
+            profile=self.request.user.profile_user)
         active_projects_pk = set()
         active_account_types_pk = set()
         for project in Project.objects.active():
@@ -116,7 +125,7 @@ class PasswordDetail(ProtectedViewMixin, BaseDetail):
     model = Password
 
 
-class PasswordCreate(ProtectedViewMixin, BaseCreate):
+class PasswordCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
     model = Password
     form_class = PasswordForm
 

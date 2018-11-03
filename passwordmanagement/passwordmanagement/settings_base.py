@@ -28,7 +28,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = []
 
-LOGIN_REDIRECT_URL = 'manage'
+LOGIN_REDIRECT_URL = 'project-list'
 LOGOUT_REDIRECT_URL = 'project-list'
 LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'

@@ -51,7 +51,7 @@ TEMPLATES[0]['OPTIONS']['loaders'] = (
 # }
 
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 DATABASES = {
     'default': {
