@@ -70,3 +70,14 @@ def activate(request, uidb64, token):
         messages.add_message(request, messages.INFO, 'Activation link is invalid!')
 
     return HttpResponseRedirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+
+def delete_profile(request, id):
+    user = CustomUser.objects.get(pk=id)
+    context = {}
+    context['user'] = user
+    if request.method == 'POST':
+        if request.user.pk == id:
+            user.delete()
+        return HttpResponseRedirect(reverse(settings.LOGIN_REDIRECT_URL))
+    return render(request, "users/delete_profile.html", context)

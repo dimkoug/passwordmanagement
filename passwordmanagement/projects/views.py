@@ -1,35 +1,13 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.shortcuts import redirect
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 
 from cms.views import BaseList, BaseDetail, BaseCreate, BaseUpdate, BaseDelete
 
 
-from .models import AccountType, Project, Password
 from .forms import AccountTypeForm, ProjectForm, PasswordForm
-
-
-class ProtectedViewMixin:
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_active:
-            return redirect('/users/login/?next=%s' % request.path)
-        return super().dispatch(request, *args, **kwargs)
-
-
-class SaveProfileMixin:
-    def form_valid(self, form):
-        form.instance.profile = self.request.user.profile_user
-        return super().form_valid(form)
-
-
-class ActiveMixin:
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        obj.active = False
-        obj.save()
-        return HttpResponseRedirect(self.success_url)
+from .models import AccountType, Project, Password
+from .mixins import ProtectedViewMixin, SaveProfileMixin, ActiveMixin
 
 
 class AccountTypeList(ProtectedViewMixin, BaseList):

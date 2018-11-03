@@ -58,6 +58,7 @@
                 {% endif %}
               </a>
               <div class="dropdown-menu" aria-labelledby="dropdown01">
+                <a class="dropdown-item" href="{% url 'delete-profile' request.user.pk %}">Delete Profile</a>
                 <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
               </div>
             </li>
