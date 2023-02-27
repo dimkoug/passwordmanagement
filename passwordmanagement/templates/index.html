@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+<div class="row mt-2">
+    <div class="card col-4 py-2 m-2">
+        <div class="card-header">
+            Passwords
+          </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"> <a href="{% url 'projects:project-list' %}">Projects</a> </li>
+          <li class="list-group-item"> <a href="{% url 'projects:accounttype-list' %}">Account Types</a> </li>
+          <li class="list-group-item"> <a href="{% url 'projects:password-list' %}">Passwords</a></li>
+        </ul>
+      </div>
+</div>
+
+
+
+{% endblock content %}

@@ -7,6 +7,13 @@ from .views import (
     PasswordUpdate, PasswordDelete
 )
 
+from .functions import (
+    get_sb_accounttypes_data,
+    get_sb_projects_data
+)
+
+app_name = 'projects'
+
 
 urlpatterns = [
     path('', ProjectList.as_view(), name='project-list'),
@@ -38,5 +45,8 @@ urlpatterns = [
          name='password-update'),
     path('password/<int:pk>/delete', PasswordDelete.as_view(),
          name='password-delete'),
+
+    path('get_sb_accounttypes_data/', get_sb_accounttypes_data, name='sb-accounttypes'),
+    path('get_sb_projects_data/', get_sb_projects_data, name='sb-projects'),
 
 ]

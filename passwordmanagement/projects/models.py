@@ -2,18 +2,11 @@ from django.db import models
 from django.conf import settings
 
 from profiles.models import Profile
+from core.models import Timestamped
 
 from .aescbc import encrypt, decrypt
 from .managers import ActiveManager
 # Create your models here.
-
-
-class Timestamped(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class AccountType(Timestamped):

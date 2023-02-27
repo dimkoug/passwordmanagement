@@ -1,13 +1,24 @@
 {% extends 'base.html' %}
-{% load cms %}
+{% load core %}
 
 {% block content %}
 
-<div class="row">
-  <div class="col-lg-12">
-    <a class="btn btn-primary pull-right" href="{% url 'password-create' %}?project={{object.pk}}"><i class="fa fa-plus" aria-hidden="true"></i>Add Password</a>
+
+<div class="row py-2">
+  <div class="col-12">
+      <h1>{{object}}</h1>
   </div>
 </div>
+
+<div class="row py-2">
+  <div class="col">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <a href="{% url 'projects:password-create' %}?project={{object.pk}}" class="btn btn-primary">Add Password</a>
+  </div>
+  </div>
+</div>
+
+
 {% if object.passwords.all %}
 <div class="row">
   <div class="col-lg-12">
@@ -26,13 +37,12 @@
         {% for password in object.passwords.all %}
         <tr>
           <td>{{password.pk}}</td>
-          <td><a href="{% url_with_pk password.account_type 'detail' %}">{{password.account_type.name}}</a></td>
+          <td><a href="{% get_url 'detail' password.account_type %}">{{password.account_type.name}}</a></td>
           <td>{{password.username}}</td>
           <td>{{password.get_password}}</td>
           <td>{{password.url}}</td>
           <td>
-            <a class="btn btn-warning" href="{% url_with_pk object 'update' %}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-            <a class="btn btn-danger" href="{% url_with_pk object 'delete' %}"><i class="fa fa-times" aria-hidden="true"></i></a>
+            {% include 'partials/action_buttons.html' with obj=password %}
           </td>
         </tr>
         {% empty %}

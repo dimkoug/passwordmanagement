@@ -11,7 +11,7 @@ class ProtectedViewMixin:
 
 class SaveProfileMixin:
     def form_valid(self, form):
-        form.instance.profile = self.request.user.profile_user
+        form.instance.profile = self.request.user.profile
         return super().form_valid(form)
 
 

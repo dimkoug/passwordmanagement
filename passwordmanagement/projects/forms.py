@@ -1,23 +1,23 @@
 from django import forms
 
-from cms.forms import DynamicForm
+from core.forms import BootstrapForm
 
 from .models import AccountType, Project, Password
 
 
-class AccountTypeForm(DynamicForm, forms.ModelForm):
+class AccountTypeForm(BootstrapForm, forms.ModelForm):
     class Meta:
         model = AccountType
-        fields = ('name',)
+        fields = ('name','active')
 
 
-class ProjectForm(DynamicForm, forms.ModelForm):
+class ProjectForm(BootstrapForm, forms.ModelForm):
     class Meta:
         model = Project
-        fields = ('name',)
+        fields = ('name','active')
 
 
-class PasswordForm(DynamicForm, forms.ModelForm):
+class PasswordForm(BootstrapForm, forms.ModelForm):
     class Meta:
         model = Password
         fields = (

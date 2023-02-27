@@ -1,109 +1,184 @@
 from django.shortcuts import render
-from django.urls import reverse_lazy
-from django.db.models import Q
+from django.urls import reverse, reverse_lazy
+from django.template.loader import render_to_string
+from django.db.models import Prefetch, Q
+from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from cms.views import BaseList, BaseDetail, BaseCreate, BaseUpdate, BaseDelete
+
+from core.functions import is_ajax
+from core.mixins import PaginationMixin, ModelMixin, SuccessUrlMixin,FormMixin,QueryListMixin, AjaxDeleteMixin
 
 
 from .forms import AccountTypeForm, ProjectForm, PasswordForm
 from .models import AccountType, Project, Password
-from .mixins import ProtectedViewMixin, SaveProfileMixin, ActiveMixin
 
 
-class AccountTypeList(ProtectedViewMixin, BaseList):
+class BaseListView(PaginationMixin,QueryListMixin,ModelMixin, LoginRequiredMixin, ListView):
+    def dispatch(self, *args, **kwargs):
+        self.ajax_list_partial = '{}/partials/{}_list_partial.html'.format(self.model._meta.app_label,self.model.__name__.lower())
+        return super().dispatch(*args, **kwargs)
+    
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+        if is_ajax(request):
+            html_form = render_to_string(
+                self.ajax_list_partial, context, request)
+            return JsonResponse(html_form, safe=False)
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
+
+
+class AccountTypeList(BaseListView):
     model = AccountType
     paginate_by = 100
+    queryset = AccountType.objects.select_related('profile')
 
     def get_queryset(self):
         qs = super().get_queryset().active().filter(
-            profile=self.request.user.profile_user)
+            profile=self.request.user.profile)
         q = self.request.GET.get('q')
         if q and q != '':
             qs = qs.filter(name__icontains=q)
         return qs
 
 
-class AccountTypeDetail(ProtectedViewMixin, BaseDetail):
+class AccountTypeDetail(LoginRequiredMixin, DetailView):
     model = AccountType
+    queryset = AccountType.objects.select_related('profile')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
 
 
-class AccountTypeCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
+class AccountTypeCreate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, CreateView):
     model = AccountType
     form_class = AccountTypeForm
 
+    def form_valid(self,form):
+        form.instance.profile = self.request.user.profile
+        form.save()
+        return super().form_valid(form)
 
-class AccountTypeUpdate(ProtectedViewMixin, BaseUpdate):
+
+class AccountTypeUpdate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, UpdateView):
     model = AccountType
     form_class = AccountTypeForm
 
+    queryset = AccountType.objects.select_related('profile')
 
-class AccountTypeDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
+
+
+class AccountTypeDelete(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,AjaxDeleteMixin,DeleteView):
     model = AccountType
-    success_url = reverse_lazy('accounttype-list')
+    ajax_partial = 'partials/ajax_delete_modal.html'
+    queryset = AccountType.objects.select_related('profile')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
 
 
-class ProjectList(ProtectedViewMixin, BaseList):
+class ProjectList(BaseListView):
     model = Project
     paginate_by = 100
+    queryset = Project.objects.select_related('profile')
 
     def get_queryset(self):
         qs = super().get_queryset().active().filter(
-            profile=self.request.user.profile_user)
+            profile=self.request.user.profile)
         q = self.request.GET.get('q')
         if q and q != '':
             qs = qs.filter(name__icontains=q)
         return qs
 
 
-class ProjectDetail(ProtectedViewMixin, BaseDetail):
+class ProjectDetail(LoginRequiredMixin, DetailView):
     model = Project
-
-
-class ProjectCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
-    model = Project
-    form_class = ProjectForm
-
-
-class ProjectUpdate(ProtectedViewMixin, BaseUpdate):
-    model = Project
-    form_class = ProjectForm
-
-
-class ProjectDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
-    model = Project
-    success_url = reverse_lazy('project-list')
-
-
-class PasswordList(ProtectedViewMixin, BaseList):
-    model = Password
-    paginate_by = 100
+    queryset = Project.objects.select_related('profile')
 
     def get_queryset(self):
-        qs = super().get_queryset().active().filter(
-            profile=self.request.user.profile_user)
-        active_projects_pk = set()
-        active_account_types_pk = set()
-        for project in Project.objects.active():
-            active_projects_pk.add(project.pk)
-        for account_type in AccountType.objects.active():
-            active_account_types_pk.add(account_type.pk)
-        qs = qs.filter(
-            Q(project_id__in=active_projects_pk) |
-            Q(account_type_id__in=active_account_types_pk))
-        q = self.request.GET.get('q')
-        if q and q != '':
-            qs = qs.filter(
-                Q(project__name__icontains=q) |
-                Q(account_type__name__icontains=q) | Q(username__icontains=q)
-            )
-        return qs
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
 
 
-class PasswordDetail(ProtectedViewMixin, BaseDetail):
+class ProjectCreate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, CreateView):
+    model = Project
+    form_class = ProjectForm
+
+    def form_valid(self,form):
+        form.instance.profile = self.request.user.profile
+        form.save()
+        return super().form_valid(form)
+
+
+class ProjectUpdate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, UpdateView):
+    model = Project
+    form_class = ProjectForm
+
+    queryset = Project.objects.select_related('profile')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
+
+
+class ProjectDelete(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,AjaxDeleteMixin,DeleteView):
+    model = Project
+    ajax_partial = 'partials/ajax_delete_modal.html'
+    queryset = Project.objects.select_related('profile')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
+
+
+class PasswordList(BaseListView):
     model = Password
+    paginate_by = 100
+    queryset = Password.objects.select_related('profile', 'account_type', 'project')
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        accounttype = self.request.GET.get('accounttype')
+        project = self.request.GET.get('project')
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        if accounttype:
+            queryset = queryset.filter(account_type=accounttype)
+        if project:
+            queryset = queryset.filter(project=project)
+        return queryset
 
 
-class PasswordCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
+class PasswordDetail(LoginRequiredMixin, DetailView):
+    model = Password
+    queryset = Password.objects.select_related('profile', 'account_type', 'project')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
+
+
+
+class PasswordCreate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, CreateView):
     model = Password
     form_class = PasswordForm
 
@@ -119,12 +194,29 @@ class PasswordCreate(ProtectedViewMixin, SaveProfileMixin, BaseCreate):
             })
         return initial
 
+    def form_valid(self,form):
+        form.instance.profile = self.request.user.profile
+        form.save()
+        return super().form_valid(form)
 
-class PasswordUpdate(ProtectedViewMixin, BaseUpdate):
+
+class PasswordUpdate(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,FormMixin, UpdateView):
     model = Password
     form_class = PasswordForm
+    queryset = Password.objects.select_related('profile', 'account_type', 'project')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset
 
 
-class PasswordDelete(ProtectedViewMixin, ActiveMixin, BaseDelete):
+class PasswordDelete(ModelMixin, LoginRequiredMixin,SuccessUrlMixin,AjaxDeleteMixin,DeleteView):
     model = Password
-    success_url = reverse_lazy('password-list')
+    ajax_partial = 'partials/ajax_delete_modal.html'
+    queryset = Password.objects.select_related('profile', 'account_type', 'project')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(profile_id=self.request.user.profile.id)
+        return queryset

@@ -1,7 +1,9 @@
+.venv
+venv
 env
-public
 data
 settings_local.py
+migrations
 __pycache__
 *.pyc
 debug.log

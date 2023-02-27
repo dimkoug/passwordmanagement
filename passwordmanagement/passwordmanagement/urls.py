@@ -18,10 +18,17 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from .views import IndexView
+
+
+
 urlpatterns = [
-    path('', include('projects.urls')),
-    path('admin/', admin.site.urls),
+    path('', IndexView.as_view(), name='index'),
+    path('projects/', include('projects.urls',namespace='projects')),
     path('users/', include('users.urls')),
+    path('users/api/', include('users.api.routers')),
+    path('profiles/', include('profiles.urls')),
+    path('admin/', admin.site.urls),
 ]
 
 if settings.DEBUG:
@@ -29,12 +36,10 @@ if settings.DEBUG:
         settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
     try:
         import debug_toolbar
+        urlpatterns += [
+            path('__debug__', include(debug_toolbar.urls)),
+        ]
     except ImportError:
         pass
-    else:
-        urlpatterns += [
-            path('__debug__', include(debug_toolbar.urls))
-        ]
